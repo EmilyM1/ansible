@@ -228,29 +228,25 @@ class KubernetesService(KubernetesRawModule):
         #
         #api_version = 'v1'
         event = {
-        apiVersion: v1
-        count: 23
-        eventTime: null
-        firstTimestamp: "2019-09-24T00:35:11Z"
-        involvedObject:
-        apiVersion: v1
-        kind: Secret
-        name: example-com-tls
-        namespace: default
-        resourceVersion: "53048802"
-        uid: e16b9a13-d4f2-11e9-a422-0205eba0a6b6
-        kind: Event
-        lastTimestamp: "2019-09-24T22:35:11Z"
-        message: Certificate expiring in 77 days
-        metadata:
-        creationTimestamp: "2019-09-24T00:35:11Z"
-        name: example-com-tls.15c738ad1ea5d4ef
-        namespace: default
-        resourceVersion: "54557321"
-        selfLink: /api/v1/namespaces/default/events/example-com-tls.15c738ad1ea5d4ef
-        uid: 2adae2a8-de63-11e9-a3d9-0a8df1d23478
-        reason: Certs Soon to Expire
-        reportingComponent: ""
+        'apiVersion': 'v1',
+        'count': 23,
+        'eventTime': null,
+        'firstTimestamp': "2019-09-24T00:37:11Z",
+        'involvedObject':[
+        'apiVersion': 'v1',
+        'kind': 'Secret',
+        'name': 'example',
+        'namespace': 'default',
+        'kind': 'Event',
+        'lastTimestamp': "2019-09-24T22:37:11Z",
+        #message: Certificate expiring in 177 days
+        'metadata':[
+        'creationTimestamp': "2019-09-24T00:37:11Z",
+        'name': 'example-com'
+        'namespace': 'default',
+        'resourceVersion': "54557321"],
+        'reason': "",
+        reportingComponent: "",
         reportingInstance: ""
 }
         # selector = self.params.get('selector')
