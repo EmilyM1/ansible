@@ -198,16 +198,16 @@ SERVICE_ARG_SPEC = {
 }
 
 
-class KubernetesService(KubernetesRawModule):
+class KubernetesEvent(KubernetesRawModule):
     def __init__(self, *args, **kwargs):
-        super(KubernetesService, self).__init__(*args, k8s_kind='Service', **kwargs)
+        super(KubernetesEvent, self).__init__(*args, k8s_kind='Event', **kwargs)
 
     @staticmethod
     def merge_dicts(x, y):
         for k in set(x.keys()).union(y.keys()):
             if k in x and k in y:
                 if isinstance(x[k], dict) and isinstance(y[k], dict):
-                    yield (k, dict(KubernetesService.merge_dicts(x[k], y[k])))
+                    yield (k, dict(KubernetesEvent.merge_dicts(x[k], y[k])))
                 else:
                     yield (k, y[k])
             elif k in x:
@@ -227,34 +227,77 @@ class KubernetesService(KubernetesRawModule):
         self.client = self.get_api_client()
         #
         api_version = 'v1'
+
+        # event = {
+        # 'api_version' : 'v1',
+        #  'message': 'I am a manually created event',
+        #   'metadata': { 'name': 'some_event' },
+        #    'involvedObject': { 'apiVersion': 'v1', 'kind': 'Event', 'namespace': 'metering-emoss'}
+        # }
+
+        message = self.params.get('message')
         event = {
-        "apiVersion": "v1",
-        "count": 23,
-        "eventTime": "2019-09-24T00:37:11Z",
-        "firstTimestamp": "2019-09-24T00:37:11Z",
-        "involvedObject": {
-          "apiVersion": "v1",
-          "kind": "Secret",
-          "name": "example",
+       "apiVersion": "v1",
+       "count": 162,
+       "eventTime": "2019-10-06T22:19:42Z",
+       "firstTimestamp": "2019-10-06T22:19:42Z",
+       "involvedObject": {
+          "apiVersion": "servicecatalog.k8s.io/v1beta1",
+          "kind": "ClusterServiceBroker",
+          "name": "template-service-broker",
+          "resourceVersion": "69891762",
+          "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
+       },
+       "kind": "Event",
+       "lastTimestamp": "2019-10-08T01:04:37Z",
+       "message": "Successfully fetched catalog entries from broker.",
+       "metadata": {
+          "creationTimestamp": "2019-10-06T22:19:42Z",
+          "name": "template-service-broker.15cb2ed3c0e38aeb",
           "namespace": "default",
-          "resourceVersion": "5",
-          "uid": "e1"
-        },
-        "kind": "Event",
-        "lastTimestamp": "2019-09-24T22:37:11Z",
-        "message": "fake message",
-        "metadata": {
-          "creationTimestamp": "2019-09-24T00:37:11Z",
-          "name": "example",
-          "namespace": "default",
-          "resourceVersion": "5",
-          "selfLink": "stuff",
-          "uid": "2"
-        },
-        "reason": "Certs",
-        "reportingComponent": "",
-        "reportingInstance": ""
-}
+          "resourceVersion": "71382795",
+          "selfLink": "/api/v1/namespaces/default/events/template-service-broker.15cb2ed3c0e38aeb",
+          "uid": "64cb5a6a-e887-11e9-8c19-0a8df1d23478"
+       },
+       "reason": "FetchedCatalog",
+       "reportingComponent": "",
+       "reportingInstance": "",
+       "source": {
+          "component": "service-catalog-controller-manager"
+       },
+       "type": "Normal"
+    }
+
+
+
+#         event = {
+#         "apiVersion": "v1",
+#         "count": 23,
+#         "eventTime": "2019-09-24T00:37:11Z",
+#         "firstTimestamp": "2019-09-24T00:37:11Z",
+#         "involvedObject": {
+#           "apiVersion": "v1",
+#           "kind": "Event",
+#           "name": "example",
+#           "namespace": "default",
+#           "resourceVersion": "5",
+#           "uid": "e1"
+#         },
+#         "kind": "Event",
+#         "lastTimestamp": "2019-09-24T22:37:11Z",
+#         "message": "fake message",
+#         "metadata": {
+#           "creationTimestamp": "2019-09-24T00:37:11Z",
+#           "name": "example",
+#           "namespace": "default",
+#           "resourceVersion": "5",
+#           "selfLink": "stuff",
+#           "uid": "2"
+#         },
+#         "reason": "Certs",
+#         "reportingComponent": "",
+#         "reportingInstance": ""
+# }
         # selector = self.params.get('selector')
         # service_type = self.params.get('type')
         # ports = self.params.get('ports')
@@ -276,7 +319,7 @@ class KubernetesService(KubernetesRawModule):
         # # 'resource_definition:' has lower priority than module parameters
         # definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
 
-        resource = self.find_resource('Event', api_version, fail=True)
+        resource = self.find_resource('Event', 'v1', fail=True)
         # definition = self.set_defaults(resource, definition)
         result = self.perform_action(resource, event)
         #result = {}
@@ -284,7 +327,7 @@ class KubernetesService(KubernetesRawModule):
 
 
 def main():
-    module = KubernetesService()
+    module = KubernetesEvent()
     try:
         module.execute_module()
     except Exception as e:
