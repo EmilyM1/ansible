@@ -239,7 +239,7 @@ class KubernetesEvent(KubernetesRawModule):
         event = {
        "apiVersion": "v1",
        "count": 162,
-       "eventTime": "2019-10-06T22:19:42Z",
+       "eventTime": None,
        "firstTimestamp": "2019-10-06T22:19:42Z",
        "involvedObject": {
           "apiVersion": "servicecatalog.k8s.io/v1beta1",
@@ -252,12 +252,8 @@ class KubernetesEvent(KubernetesRawModule):
        "lastTimestamp": "2019-10-08T01:04:37Z",
        "message": "Successfully fetched catalog entries from broker.",
        "metadata": {
-          "creationTimestamp": "2019-10-06T22:19:42Z",
           "name": "template-service-broker.15cb2ed3c0e38aeb",
           "namespace": "default",
-          "resourceVersion": "71382795",
-          "selfLink": "/api/v1/namespaces/default/events/template-service-broker.15cb2ed3c0e38aeb",
-          "uid": "64cb5a6a-e887-11e9-8c19-0a8df1d23478"
        },
        "reason": "FetchedCatalog",
        "reportingComponent": "",
