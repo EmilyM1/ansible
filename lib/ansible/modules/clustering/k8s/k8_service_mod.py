@@ -226,28 +226,34 @@ class KubernetesService(KubernetesRawModule):
         """ Module execution """
         self.client = self.get_api_client()
         #
-        #api_version = 'v1'
+        api_version = 'v1'
         event = {
-        'apiVersion': 'v1',
-        'count': 23,
-        'eventTime': null,
-        'firstTimestamp': "2019-09-24T00:37:11Z",
-        'involvedObject':[
-        'apiVersion': 'v1',
-        'kind': 'Secret',
-        'name': 'example',
-        'namespace': 'default',
-        'kind': 'Event',
-        'lastTimestamp': "2019-09-24T22:37:11Z",
-        #message: Certificate expiring in 177 days
-        'metadata':[
-        'creationTimestamp': "2019-09-24T00:37:11Z",
-        'name': 'example-com'
-        'namespace': 'default',
-        'resourceVersion': "54557321"],
-        'reason': "",
-        reportingComponent: "",
-        reportingInstance: ""
+        "apiVersion": "v1",
+        "count": 23,
+        "eventTime": "2019-09-24T00:37:11Z",
+        "firstTimestamp": "2019-09-24T00:37:11Z",
+        "involvedObject": {
+          "apiVersion": "v1",
+          "kind": "Secret",
+          "name": "example",
+          "namespace": "default",
+          "resourceVersion": "5",
+          "uid": "e1"
+        },
+        "kind": "Event",
+        "lastTimestamp": "2019-09-24T22:37:11Z",
+        "message": "fake message",
+        "metadata": {
+          "creationTimestamp": "2019-09-24T00:37:11Z",
+          "name": "example",
+          "namespace": "default",
+          "resourceVersion": "5",
+          "selfLink": "stuff",
+          "uid": "2"
+        },
+        "reason": "Certs",
+        "reportingComponent": "",
+        "reportingInstance": ""
 }
         # selector = self.params.get('selector')
         # service_type = self.params.get('type')
