@@ -171,30 +171,15 @@ from ansible.module_utils.k8s.common import AUTH_ARG_SPEC, COMMON_ARG_SPEC
 from ansible.module_utils.k8s.raw import KubernetesRawModule
 
 
-SERVICE_ARG_SPEC = {
+EVENT_ARG_SPEC = {
     'state': {
         'default': 'present',
         'choices': ['present', 'absent'],
     },
-    'force': {
-        'type': 'bool',
-        'default': False,
-    },
-    'resource_definition': {
-        'type': 'dict',
-        'aliases': ['definition', 'inline']
-    },
     'name': {'required': True},
     'namespace': {'required': True},
     'merge_type': {'type': 'list', 'choices': ['json', 'merge', 'strategic-merge']},
-    'selector': {'type': 'dict'},
-    'type': {
-        'type': 'str',
-        'choices': [
-            'NodePort', 'ClusterIP', 'LoadBalancer', 'ExternalName'
-        ],
-    },
-    'ports': {'type': 'list'},
+
 }
 
 
@@ -219,7 +204,7 @@ class KubernetesEvent(KubernetesRawModule):
     def argspec(self):
         """ argspec property builder """
         argument_spec = copy.deepcopy(AUTH_ARG_SPEC)
-        argument_spec.update(SERVICE_ARG_SPEC)
+        argument_spec.update(EVENT_ARG_SPEC)
         return argument_spec
 
     def execute_module(self):
