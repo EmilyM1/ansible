@@ -245,19 +245,19 @@ class KubernetesEvent(KubernetesRawModule):
           "apiVersion": "servicecatalog.k8s.io/v1beta1",
           "kind": "ClusterServiceBroker",
           "name": "template-service-broker",
-          "resourceVersion": "69891762",
+          "resourceVersion": "6989176211",
           "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
        },
        "kind": "Event",
        "lastTimestamp": "2019-10-08T01:04:37Z",
        "message": "Successfully fetched catalog entries from broker.",
        "metadata": {
-          "name": "template-service-broker.15cb2ed3c0e38aeb",
+          "name": "template-service-broker",
           "namespace": "default",
        },
        "reason": "FetchedCatalog",
        "reportingComponent": "",
-       "reportingInstance": "",
+       "reportingInstance": "1234",
        "source": {
           "component": "service-catalog-controller-manager"
        },
