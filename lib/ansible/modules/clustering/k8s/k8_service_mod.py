@@ -164,6 +164,7 @@ result:
 
 import copy
 import traceback
+import datetime
 
 from collections import defaultdict
 
@@ -212,20 +213,15 @@ class KubernetesEvent(KubernetesRawModule):
         self.client = self.get_api_client()
         #
         api_version = 'v1'
-
-        # event = {
-        # 'api_version' : 'v1',
-        #  'message': 'I am a manually created event',
-        #   'metadata': { 'name': 'some_event' },
-        #    'involvedObject': { 'apiVersion': 'v1', 'kind': 'Event', 'namespace': 'metering-emoss'}
-        # }
-
+        name_args = self.params.get('name')
+        namespace_args = self.params.get('namespace')
         message = self.params.get('message')
+
         event = {
        "apiVersion": "v1",
-       "count": 162,
-       "eventTime": None,
-       "firstTimestamp": "2019-10-06T22:19:42Z",
+       "count": 1,
+       "eventTime": print(datetime.datetime.now()),
+       "firstTimestamp": print(datetime.datetime.now()),
        "involvedObject": {
           "apiVersion": "servicecatalog.k8s.io/v1beta1",
           "kind": "ClusterServiceBroker",
@@ -235,9 +231,9 @@ class KubernetesEvent(KubernetesRawModule):
        },
        "kind": "Event",
        "lastTimestamp": "2019-10-08T01:04:37Z",
-       "message": "Successfully fetched catalog entries from broker.",
+       "message": "Successfully fetched catalog entries from broker for this test event.",
        "metadata": {
-          "name": "template-service-broker",
+          "name": "def_meta['name']",
           "namespace": "default",
        },
        "reason": "FetchedCatalog",
@@ -250,40 +246,15 @@ class KubernetesEvent(KubernetesRawModule):
     }
 
 
-
-#         event = {
-#         "apiVersion": "v1",
-#         "count": 23,
-#         "eventTime": "2019-09-24T00:37:11Z",
-#         "firstTimestamp": "2019-09-24T00:37:11Z",
-#         "involvedObject": {
-#           "apiVersion": "v1",
-#           "kind": "Event",
-#           "name": "example",
-#           "namespace": "default",
-#           "resourceVersion": "5",
-#           "uid": "e1"
-#         },
-#         "kind": "Event",
-#         "lastTimestamp": "2019-09-24T22:37:11Z",
-#         "message": "fake message",
-#         "metadata": {
-#           "creationTimestamp": "2019-09-24T00:37:11Z",
-#           "name": "example",
-#           "namespace": "default",
-#           "resourceVersion": "5",
-#           "selfLink": "stuff",
-#           "uid": "2"
-#         },
-#         "reason": "Certs",
-#         "reportingComponent": "",
-#         "reportingInstance": ""
-# }
         # selector = self.params.get('selector')
         # service_type = self.params.get('type')
         # ports = self.params.get('ports')
         #
-        # definition = defaultdict(defaultdict)
+        definition = defaultdict(defaultdict)
+
+        # def_meta = definition['metadata']
+        # def_meta['name'] = self.params.get('name')
+        # def_meta['namespace'] = self.params.get('namespace')
         #
         # definition['kind'] = 'Service'
         # definition['apiVersion'] = api_version
@@ -298,7 +269,7 @@ class KubernetesEvent(KubernetesRawModule):
         # def_meta['namespace'] = self.params.get('namespace')
         #
         # # 'resource_definition:' has lower priority than module parameters
-        # definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
+        definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
 
         resource = self.find_resource('Event', 'v1', fail=True)
         # definition = self.set_defaults(resource, definition)
