@@ -167,14 +167,14 @@ import traceback
 import datetime
 import kubernetes.config.dateutil
 
-
 from collections import defaultdict
 
 from ansible.module_utils.k8s.common import AUTH_ARG_SPEC, COMMON_ARG_SPEC
 from ansible.module_utils.k8s.raw import KubernetesRawModule
+# now = datetime.datetime.utcnow()
+# trying = now.isoformat()
 now = datetime.datetime.now()
 rfc = kubernetes.config.dateutil.format_rfc3339(now)
-
 
 EVENT_ARG_SPEC = {
     'state': {
@@ -224,8 +224,8 @@ class KubernetesEvent(KubernetesRawModule):
         event = {
        "apiVersion": "v1",#nr
        "count": 1,
-       "eventTime": rfc,#nr
-       "firstTimestamp":"2019-10-08T01:04:37Z",
+       "eventTime": None,#nr
+       "firstTimestamp":rfc,
        "involvedObject": { #ref to
           "apiVersion": "servicecatalog.k8s.io/v1beta1",
           "kind": "ClusterServiceBroker",
@@ -234,17 +234,17 @@ class KubernetesEvent(KubernetesRawModule):
           "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
        },
        "kind": "Event", #not returned
-       "lastTimestamp": "2019-10-08T01:04:37Z",
-       "message": "Successfully fetched catalog entries from broker for this test event.",
+       "lastTimestamp": rfc,
+       "message": "Metering is installing",
        "metadata": {
           "name": "def_meta['name']",
           "namespace": "default",
        },
-       "reason": "FetchedCatalog",
-       "reportingComponent": "",#not returned
+       "reason": "Metering install",
+       "reportingComponent": "Metering",#not returned
        "reportingInstance": "1234", #not returned
        "source": { #not returned
-          "component": "service-catalog-controller-manager"
+          "component": "Metering Operator"
        },
        "type": "Normal"
     }
