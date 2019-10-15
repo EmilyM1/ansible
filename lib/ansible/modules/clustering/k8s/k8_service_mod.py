@@ -165,11 +165,15 @@ result:
 import copy
 import traceback
 import datetime
+import kubernetes.config.dateutil
+
 
 from collections import defaultdict
 
 from ansible.module_utils.k8s.common import AUTH_ARG_SPEC, COMMON_ARG_SPEC
 from ansible.module_utils.k8s.raw import KubernetesRawModule
+now = datetime.datetime.now()
+rfc = kubernetes.config.dateutil.format_rfc3339(now)
 
 
 EVENT_ARG_SPEC = {
@@ -218,18 +222,18 @@ class KubernetesEvent(KubernetesRawModule):
         message = self.params.get('message')
 
         event = {
-       "apiVersion": "v1",
+       "apiVersion": "v1",#nr
        "count": 1,
-       "eventTime": print(datetime.datetime.now()),
-       "firstTimestamp": print(datetime.datetime.now()),
-       "involvedObject": {
+       "eventTime": rfc,#nr
+       "firstTimestamp":"2019-10-08T01:04:37Z",
+       "involvedObject": { #ref to
           "apiVersion": "servicecatalog.k8s.io/v1beta1",
           "kind": "ClusterServiceBroker",
           "name": "template-service-broker",
           "resourceVersion": "6989176211",
           "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
        },
-       "kind": "Event",
+       "kind": "Event", #not returned
        "lastTimestamp": "2019-10-08T01:04:37Z",
        "message": "Successfully fetched catalog entries from broker for this test event.",
        "metadata": {
@@ -237,9 +241,9 @@ class KubernetesEvent(KubernetesRawModule):
           "namespace": "default",
        },
        "reason": "FetchedCatalog",
-       "reportingComponent": "",
-       "reportingInstance": "1234",
-       "source": {
+       "reportingComponent": "",#not returned
+       "reportingInstance": "1234", #not returned
+       "source": { #not returned
           "component": "service-catalog-controller-manager"
        },
        "type": "Normal"
