@@ -184,6 +184,9 @@ EVENT_ARG_SPEC = {
     'name': {'required': True},
     'namespace': {'required': True},
     'merge_type': {'type': 'list', 'choices': ['json', 'merge', 'strategic-merge']},
+    'message': {'type':'str', 'required':True},
+    'reason': {'type':'str', 'required':True},
+    'reportingComponent': {'type': 'str', 'required':True},
 
 }
 
@@ -220,6 +223,8 @@ class KubernetesEvent(KubernetesRawModule):
         name_args = self.params.get('name')
         namespace_args = self.params.get('namespace')
         message = self.params.get('message')
+        reason = self.params.get('reason')
+        reportingComponent = self.params.get('reportingComponent')
 
         event = {
        "apiVersion": "v1",#nr
@@ -235,13 +240,13 @@ class KubernetesEvent(KubernetesRawModule):
        },
        "kind": "Event", #not returned
        "lastTimestamp": rfc,# creating
-       "message": "Metering is installing", # will be can't br hardcoded, user supllied arg
+       "message": message, # will be can't br hardcoded, user supllied arg
        "metadata": {
           "name": "def_meta['name']",
           "namespace": "default",
        },
-       "reason": "Metering install", #not hardcoded
-       "reportingComponent": "Metering",#not returned not ahrdcoded
+       "reason": reason, #not hardcoded
+       "reportingComponent": reportingComponent,#not returned not ahrdcoded
        "reportingInstance": "1234", #not returned , not hardcoded
        "source": { #not returned
           "component": "Metering Operator" #nh
