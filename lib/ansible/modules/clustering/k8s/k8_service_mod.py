@@ -187,6 +187,9 @@ EVENT_ARG_SPEC = {
     'message': {'type':'str', 'required':True},
     'reason': {'type':'str', 'required':True},
     'reportingComponent': {'type': 'str', 'required':True},
+    'type': {
+        'choices': ['Normal', 'Warning'],
+        },
 
 }
 
@@ -225,6 +228,7 @@ class KubernetesEvent(KubernetesRawModule):
         message = self.params.get('message')
         reason = self.params.get('reason')
         reportingComponent = self.params.get('reportingComponent')
+        event_type = self.params.get('type')
 
         event = {
        "apiVersion": "v1",#nr
@@ -249,9 +253,9 @@ class KubernetesEvent(KubernetesRawModule):
        "reportingComponent": reportingComponent,#not returned not ahrdcoded
        "reportingInstance": "1234", #not returned , not hardcoded
        "source": { #not returned
-          "component": "Metering Operator" #nh
+          "component": "Metering Operator", #nh
        },
-       "type": "Normal" #enum service, maybe maybe k8 service
+       "type": event_type #enum service, maybe maybe k8 service
     }
 
 
