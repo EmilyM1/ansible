@@ -223,9 +223,9 @@ class KubernetesEvent(KubernetesRawModule):
 
         event = {
        "apiVersion": "v1",#nr
-       "count": 1,
+       "count": 1, # not increment up
        "eventTime": None,#nr
-       "firstTimestamp":rfc,
+       "firstTimestamp":rfc, # dont modifiy it after first time,
        "involvedObject": { #ref to
           "apiVersion": "servicecatalog.k8s.io/v1beta1",
           "kind": "ClusterServiceBroker",
@@ -234,19 +234,19 @@ class KubernetesEvent(KubernetesRawModule):
           "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
        },
        "kind": "Event", #not returned
-       "lastTimestamp": rfc,
-       "message": "Metering is installing",
+       "lastTimestamp": rfc,# creating
+       "message": "Metering is installing", # will be can't br hardcoded, user supllied arg
        "metadata": {
           "name": "def_meta['name']",
           "namespace": "default",
        },
-       "reason": "Metering install",
-       "reportingComponent": "Metering",#not returned
-       "reportingInstance": "1234", #not returned
+       "reason": "Metering install", #not hardcoded
+       "reportingComponent": "Metering",#not returned not ahrdcoded
+       "reportingInstance": "1234", #not returned , not hardcoded
        "source": { #not returned
-          "component": "Metering Operator"
+          "component": "Metering Operator" #nh
        },
-       "type": "Normal"
+       "type": "Normal" #enum service, maybe maybe k8 service
     }
 
 
