@@ -233,6 +233,12 @@ class KubernetesEvent(KubernetesRawModule):
         event_type = self.params.get('type')
         source = self.params.get('source')
 
+        definition = defaultdict(defaultdict)
+
+        def_meta = definition['metadata']
+        def_meta['name'] = self.params.get('name')
+        def_meta['namespace'] = self.params.get('namespace')
+
         event = {
        "apiVersion": "v1",#nr
        "count": 1, # not increment up
@@ -249,7 +255,7 @@ class KubernetesEvent(KubernetesRawModule):
        "lastTimestamp": rfc,# creating
        "message": message, # will be can't br hardcoded, user supllied arg
        "metadata": {
-          "name": "def_meta['name']",
+          "name": def_meta['name'],
           "namespace": "default",
        },
        "reason": reason, #not hardcoded
@@ -265,11 +271,6 @@ class KubernetesEvent(KubernetesRawModule):
         # service_type = self.params.get('type')
         # ports = self.params.get('ports')
         #
-        definition = defaultdict(defaultdict)
-
-        # def_meta = definition['metadata']
-        # def_meta['name'] = self.params.get('name')
-        # def_meta['namespace'] = self.params.get('namespace')
         #
         # definition['kind'] = 'Service'
         # definition['apiVersion'] = api_version
@@ -287,7 +288,7 @@ class KubernetesEvent(KubernetesRawModule):
         definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
 
         resource = self.find_resource('Event', 'v1', fail=True)
-        # definition = self.set_defaults(resource, definition)
+        definition = self.set_defaults(resource, definition)
         result = self.perform_action(resource, event)
         #result = {}
         self.exit_json(**result)
