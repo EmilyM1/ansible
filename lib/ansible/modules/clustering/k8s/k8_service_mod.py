@@ -192,6 +192,12 @@ EVENT_ARG_SPEC = {
         },
     'source': {'type':'str',
     'component': {'type':'str', 'required':True}},
+    'involvedObject': {'type': 'str',
+    'apiVersion':{'type': 'str', 'required': True},
+    'kind': {'type': 'str', 'required': True},
+    'name':{'type': 'str', 'required':True},
+    'namespace':{'type': 'str', 'required': True}},
+
 
 }
 
@@ -232,6 +238,7 @@ class KubernetesEvent(KubernetesRawModule):
         reportingComponent = self.params.get('reportingComponent')
         event_type = self.params.get('type')
         source = self.params.get('source')
+#        involvedObject = self.params.get('involvedObject')
 
         definition = defaultdict(defaultdict)
 
@@ -239,17 +246,28 @@ class KubernetesEvent(KubernetesRawModule):
         def_meta['name'] = self.params.get('name')
         def_meta['namespace'] = self.params.get('namespace')
 
+        def_involvedObject = definition['involvedObject']
+        def_involvedObject['namespace'] = self.params.get('namespace')
+        def_involvedObject['apiVersion'] = self.params.get('apiVersion')
+        def_involvedObject['kind'] = self.params.get('kind')
+        def_involvedObject['name'] = self.params.get('name')
+
+#        def_involvedObject = definition['involvedObject']
+#        def_involvedObject['uuid'] = self.params.get('uid')
+#        def_involvedObject['resourceVersion'] = self.params.get('resourceVersion')
+
         event = {
        "apiVersion": "v1",#nr
        "count": 1, # not increment up
        "eventTime": None,#nr
        "firstTimestamp":rfc, # dont modifiy it after first time,
        "involvedObject": { #ref to
-          "apiVersion": "servicecatalog.k8s.io/v1beta1",
-          "kind": "ClusterServiceBroker",
-          "name": "template-service-broker",
-          "resourceVersion": "6989176211",
-          "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
+          "apiVersion": def_involvedObject['apiVersion'],
+          "kind": def_involvedObject['kind'],
+          "namespace": def_involvedObject['namespace'],
+          "name": def_involvedObject['name'],
+#          "resourceVersion": "6989176211",
+#          "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
        },
        "kind": "Event", #not returned
        "lastTimestamp": rfc,# creating
