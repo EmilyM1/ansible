@@ -234,15 +234,10 @@ class KubernetesEvent(KubernetesRawModule):
         namespace_args = self.params.get('namespace')
         message = self.params.get('message')
         reason = self.params.get('reason')
-        print("within execute_module the reason is %s" % reason)
         reportingComponent = self.params.get('reportingComponent')
         event_type = self.params.get('type')
         source = self.params.get('source')
 #        involvedObject = self.params.get('involvedObject')
-
-        resource = self.find_resource('Event', 'v1', fail=True)#finds resource or gets it from the client api, looks for resrouce
-        # second call to find resource for involved object, set kind to arg of involved OBject kind
-        #rnewesource = self.find_resource('involvedObjectKind', 'v1', fail=True)
 
         definition = defaultdict(defaultdict)
 
@@ -259,6 +254,18 @@ class KubernetesEvent(KubernetesRawModule):
 #        def_involvedObject = definition['involvedObject']
 #        def_involvedObject['uuid'] = self.params.get('uid')
 #        def_involvedObject['resourceVersion'] = self.params.get('resourceVersion')
+        resource = self.find_resource('Event', 'v1', fail=True)#finds resource or gets it from the client api, looks for resrouce
+    # second call to find resource for involved object, set kind to arg of involved OBject kind
+    #rnewesource = self.find_resource('involvedObjectKind', 'v1', fail=True)
+        priorEvent=resource.get(name=def_meta['name'],
+                 namespace=def_meta['namespace'])
+        priorReason=priorEvent['reason']
+        print(priorReason)
+        priorCount = priorEvent['count']
+        print("current reason is %s" % reason)
+        print("the count from the prior event is %i" % priorCount)
+
+        #if
 
         event = {
        "apiVersion": "v1",#nr
@@ -307,7 +314,10 @@ class KubernetesEvent(KubernetesRawModule):
         #
         # # 'resource_definition:' has lower priority than module parameters
     #    definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
+        print("count from CURRENT is %i" % event['count'])
 
+        if priorReason != reason:
+            priorCount = priorCount + 1
         #pastexistingEvent = resource.get(name=def_meta['name'],
         #                                  namespace=def_meta['namespace'])
         definition = self.set_defaults(resource, definition)# passes ns,apiversion.kind and name in metadata
@@ -316,6 +326,7 @@ class KubernetesEvent(KubernetesRawModule):
         #print("within execute_module the reason is %s" % reason)
         #the_reason = result.reason
         #print(type(result['reason']))
+        print(priorCount)
         self.exit_json(**result)
 
     def count_unique_event(reason):
