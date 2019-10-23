@@ -198,7 +198,6 @@ EVENT_ARG_SPEC = {
     'name':{'type': 'str', 'required':True},
     'namespace':{'type': 'str', 'required': True}},
 
-
 }
 
 
@@ -206,18 +205,18 @@ class KubernetesEvent(KubernetesRawModule):
     def __init__(self, *args, **kwargs):
         super(KubernetesEvent, self).__init__(*args, k8s_kind='Event', **kwargs)
 
-    @staticmethod
-    def merge_dicts(x, y):
-        for k in set(x.keys()).union(y.keys()):
-            if k in x and k in y:
-                if isinstance(x[k], dict) and isinstance(y[k], dict):
-                    yield (k, dict(KubernetesEvent.merge_dicts(x[k], y[k])))
-                else:
-                    yield (k, y[k])
-            elif k in x:
-                yield (k, x[k])
-            else:
-                yield (k, y[k])
+    # @staticmethod
+    # def merge_dicts(x, y):
+    #     for k in set(x.keys()).union(y.keys()):
+    #         if k in x and k in y:
+    #             if isinstance(x[k], dict) and isinstance(y[k], dict):
+    #                 yield (k, dict(KubernetesEvent.merge_dicts(x[k], y[k])))
+    #             else:
+    #                 yield (k, y[k])
+    #         elif k in x:
+    #             yield (k, x[k])
+    #         else:
+    #             yield (k, y[k])
 
     @property
     def argspec(self):
@@ -228,17 +227,22 @@ class KubernetesEvent(KubernetesRawModule):
 
     def execute_module(self):
         """ Module execution """
-        self.client = self.get_api_client()
-        #
+        self.client = self.get_api_client()#mostly auth
+
         api_version = 'v1'
         name_args = self.params.get('name')
         namespace_args = self.params.get('namespace')
         message = self.params.get('message')
         reason = self.params.get('reason')
+        print("within execute_module the reason is %s" % reason)
         reportingComponent = self.params.get('reportingComponent')
         event_type = self.params.get('type')
         source = self.params.get('source')
 #        involvedObject = self.params.get('involvedObject')
+
+        resource = self.find_resource('Event', 'v1', fail=True)#finds resource or gets it from the client api, looks for resrouce
+        # second call to find resource for involved object, set kind to arg of involved OBject kind
+        #rnewesource = self.find_resource('involvedObjectKind', 'v1', fail=True)
 
         definition = defaultdict(defaultdict)
 
@@ -284,7 +288,6 @@ class KubernetesEvent(KubernetesRawModule):
        "type": event_type #enum service, maybe maybe k8 service
     }
 
-
         # selector = self.params.get('selector')
         # service_type = self.params.get('type')
         # ports = self.params.get('ports')
@@ -303,14 +306,25 @@ class KubernetesEvent(KubernetesRawModule):
         # def_meta['namespace'] = self.params.get('namespace')
         #
         # # 'resource_definition:' has lower priority than module parameters
-        definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
+    #    definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
 
-        resource = self.find_resource('Event', 'v1', fail=True)
-        definition = self.set_defaults(resource, definition)
-        result = self.perform_action(resource, event)
+        #pastexistingEvent = resource.get(name=def_meta['name'],
+        #                                  namespace=def_meta['namespace'])
+        definition = self.set_defaults(resource, definition)# passes ns,apiversion.kind and name in metadata
+        result = self.perform_action(resource, event)# updates if info has changed
         #result = {}
+        #print("within execute_module the reason is %s" % reason)
+        #the_reason = result.reason
+        #print(type(result['reason']))
         self.exit_json(**result)
 
+    def count_unique_event(reason):
+        if event['reason'] != event['reason']: #unsure if specificying old and new enough here
+            event['count'] = 1
+        else:
+            event['count'] +=1
+        count = event['count']
+        return count
 
 def main():
     module = KubernetesEvent()
@@ -318,7 +332,6 @@ def main():
         module.execute_module()
     except Exception as e:
         module.fail_json(msg=str(e), exception=traceback.format_exc())
-
 
 if __name__ == '__main__':
     main()
