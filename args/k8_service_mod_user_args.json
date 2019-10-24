@@ -1,0 +1,21 @@
+
+{
+    "ANSIBLE_MODULE_ARGS": {
+   "state": "present",
+   "name": "test-https-emily109",
+   "namespace": "default",
+   "message": "message here",
+   "reason": "reason is now different againnnnn",
+   "reportingComponent": "reportingComponents here",
+   "type": "Normal",
+   "source": {"component": "Metering components"},
+   "involvedObject": {
+      "apiVersion": "v1",
+      "kind": "Event",
+      "name": "involvedObject event names",
+      "namespace": "default"
+   }
+
+
+}
+}

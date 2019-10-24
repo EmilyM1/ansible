@@ -261,15 +261,15 @@ class KubernetesEvent(KubernetesRawModule):
                  namespace=def_meta['namespace'])
         priorReason=priorEvent['reason']
         print(priorReason)
-        priorCount = priorEvent['count']
         print("current reason is %s" % reason)
+        priorCount = priorEvent['count']
         print("the count from the prior event is %i" % priorCount)
 
         #if
 
         event = {
        "apiVersion": "v1",#nr
-       "count": 1, # not increment up
+       "count": 17, # not increment up
        "eventTime": None,#nr
        "firstTimestamp":rfc, # dont modifiy it after first time,
        "involvedObject": { #ref to
