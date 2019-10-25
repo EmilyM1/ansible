@@ -274,6 +274,7 @@ class KubernetesEvent(KubernetesRawModule):
             print(priorCount)
         else:
             priorCount = 1
+            print("If not reason changed %i" % priorCount)
 
         event = {
        "apiVersion": "v1",#nr
