@@ -267,18 +267,17 @@ class KubernetesEvent(KubernetesRawModule):
         priorCount = priorEvent['count']
         print("the count from the prior event is %i" % priorCount)
 
-        if priorEvent is not None:
-            print(" I giess I can use a bool")
-        if priorReason != reason:
-            priorCount = priorCount + 1
-            print(priorCount)
-        else:
+        if priorEvent is not None and priorReason != reason:
             priorCount = 1
-            print("If not reason changed %i" % priorCount)
+            print("If reason changed %i" % priorCount)
+        else:
+            #priorCount = 1
+            priorCount = priorCount + 1
+            print("the reason has changed", priorCount)
 
         event = {
        "apiVersion": "v1",#nr
-       "count": 18, # not increment up
+       "count": priorCount, # not increment up
        "eventTime": None,#nr
        "firstTimestamp":rfc, # dont modifiy it after first time,
        "involvedObject": { #ref to
