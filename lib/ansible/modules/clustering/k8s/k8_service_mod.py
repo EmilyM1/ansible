@@ -257,6 +257,8 @@ class KubernetesEvent(KubernetesRawModule):
         resource = self.find_resource('Event', 'v1', fail=True)#finds resource or gets it from the client api, looks for resrouce
     # second call to find resource for involved object, set kind to arg of involved OBject kind
     #rnewesource = self.find_resource('involvedObjectKind', 'v1', fail=True)
+
+    #this just establishes tha vars and seperates out the reason and count from returned cli object
         priorEvent=resource.get(name=def_meta['name'],
                  namespace=def_meta['namespace'])
         priorReason=priorEvent['reason']
@@ -265,11 +267,17 @@ class KubernetesEvent(KubernetesRawModule):
         priorCount = priorEvent['count']
         print("the count from the prior event is %i" % priorCount)
 
-        #if
+        if priorEvent is not None:
+            print(" I giess I can use a bool")
+        if priorReason != reason:
+            priorCount = priorCount + 1
+            print(priorCount)
+        else:
+            priorCount = 1
 
         event = {
        "apiVersion": "v1",#nr
-       "count": 17, # not increment up
+       "count": 18, # not increment up
        "eventTime": None,#nr
        "firstTimestamp":rfc, # dont modifiy it after first time,
        "involvedObject": { #ref to
@@ -326,7 +334,7 @@ class KubernetesEvent(KubernetesRawModule):
         #print("within execute_module the reason is %s" % reason)
         #the_reason = result.reason
         #print(type(result['reason']))
-        print(priorCount)
+        # print(priorCount)
         self.exit_json(**result)
 
     def count_unique_event(reason):
