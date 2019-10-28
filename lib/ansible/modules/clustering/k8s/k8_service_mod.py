@@ -166,6 +166,7 @@ import copy
 import traceback
 import datetime
 import kubernetes.config.dateutil
+import openshift
 
 from collections import defaultdict
 
@@ -260,7 +261,8 @@ class KubernetesEvent(KubernetesRawModule):
 
     #this just establishes tha vars and seperates out the reason and count from returned cli object
         priorEvent=resource.get(name=def_meta['name'],
-                 namespace=def_meta['namespace'])
+             namespace=def_meta['namespace'])
+        print("no event made")
         priorReason=priorEvent['reason']
         print(priorReason)
         print("current reason is %s" % reason)
@@ -275,6 +277,7 @@ class KubernetesEvent(KubernetesRawModule):
             priorCount = priorCount + 1
             print("the reason has changed", priorCount)
 
+
         event = {
        "apiVersion": "v1",#nr
        "count": priorCount, # not increment up
@@ -285,8 +288,8 @@ class KubernetesEvent(KubernetesRawModule):
           "kind": def_involvedObject['kind'],
           "namespace": def_involvedObject['namespace'],
           "name": def_involvedObject['name'],
-#          "resourceVersion": "6989176211",
-#          "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
+    #          "resourceVersion": "6989176211",
+    #          "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
        },
        "kind": "Event", #not returned
        "lastTimestamp": rfc,# creating
@@ -303,47 +306,12 @@ class KubernetesEvent(KubernetesRawModule):
        "type": event_type #enum service, maybe maybe k8 service
     }
 
-        # selector = self.params.get('selector')
-        # service_type = self.params.get('type')
-        # ports = self.params.get('ports')
-        #
-        #
-        # definition['kind'] = 'Service'
-        # definition['apiVersion'] = api_version
-        #
-        # def_spec = definition['spec']
-        # def_spec['type'] = service_type
-        # def_spec['ports'] = ports
-        # def_spec['selector'] = selector
-        #
-        # def_meta = definition['metadata']
-        # def_meta['name'] = self.params.get('name')
-        # def_meta['namespace'] = self.params.get('namespace')
-        #
-        # # 'resource_definition:' has lower priority than module parameters
-    #    definition = dict(self.merge_dicts(self.resource_definitions[0], definition))
         print("count from CURRENT is %i" % event['count'])
 
-        if priorReason != reason:
-            priorCount = priorCount + 1
-        #pastexistingEvent = resource.get(name=def_meta['name'],
-        #                                  namespace=def_meta['namespace'])
         definition = self.set_defaults(resource, definition)# passes ns,apiversion.kind and name in metadata
         result = self.perform_action(resource, event)# updates if info has changed
-        #result = {}
-        #print("within execute_module the reason is %s" % reason)
-        #the_reason = result.reason
-        #print(type(result['reason']))
-        # print(priorCount)
         self.exit_json(**result)
 
-    def count_unique_event(reason):
-        if event['reason'] != event['reason']: #unsure if specificying old and new enough here
-            event['count'] = 1
-        else:
-            event['count'] +=1
-        count = event['count']
-        return count
 
 def main():
     module = KubernetesEvent()
