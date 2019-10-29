@@ -167,6 +167,7 @@ import traceback
 import datetime
 import kubernetes.config.dateutil
 import openshift
+#from openshift.dynamic.exceptions import ResourceNotFoundError, ResourceNotUniqueError
 
 from collections import defaultdict
 
@@ -260,23 +261,25 @@ class KubernetesEvent(KubernetesRawModule):
     #rnewesource = self.find_resource('involvedObjectKind', 'v1', fail=True)
 
     #this just establishes tha vars and seperates out the reason and count from returned cli object
-        priorEvent=resource.get(name=def_meta['name'],
-             namespace=def_meta['namespace'])
-        print("no event made")
-        priorReason=priorEvent['reason']
-        print(priorReason)
-        print("current reason is %s" % reason)
-        priorCount = priorEvent['count']
-        print("the count from the prior event is %i" % priorCount)
+        priorCount = 1
+        try:
+            priorEvent=resource.get(name=def_meta['name'],
+                 namespace=def_meta['namespace'])
+            priorReason=priorEvent['reason']
+            print(priorReason)
+            print("current reason is %s" % reason)
+            priorCount = priorEvent['count']
+            print("the count from the prior event is %i" % priorCount)
 
-        if priorEvent is not None and priorReason != reason:
-            priorCount = 1
-            print("If reason changed %i" % priorCount)
-        else:
-            #priorCount = 1
-            priorCount = priorCount + 1
-            print("the reason has changed", priorCount)
-
+            if priorEvent is not None and priorReason != reason:
+                priorCount = 1
+                print("If reason changed %i" % priorCount)
+            else:
+                #priorCount = 1
+                priorCount = priorCount + 1
+                print("the reason has changed", priorCount)
+        except openshift.dynamic.exceptions.NotFoundError:
+            pass
 
         event = {
        "apiVersion": "v1",#nr
@@ -311,6 +314,8 @@ class KubernetesEvent(KubernetesRawModule):
         definition = self.set_defaults(resource, definition)# passes ns,apiversion.kind and name in metadata
         result = self.perform_action(resource, event)# updates if info has changed
         self.exit_json(**result)
+        # except openshift.dynamic.exceptions.NotFoundError:
+        #     print(" no event")
 
 
 def main():
