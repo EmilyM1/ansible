@@ -254,8 +254,8 @@ class KubernetesEvent(KubernetesRawModule):
         def_involvedObject['name'] = self.params.get('name')
 
 #        def_involvedObject = definition['involvedObject']
-#        def_involvedObject['uuid'] = self.params.get('uid')
-#        def_involvedObject['resourceVersion'] = self.params.get('resourceVersion')
+        def_involvedObject['uid'] = self.params.get('uid')
+        def_involvedObject['resourceVersion'] = self.params.get('resourceVersion')
         resource = self.find_resource('Event', 'v1', fail=True)#finds resource or gets it from the client api, looks for resrouce
     # second call to find resource for involved object, set kind to arg of involved OBject kind
     #rnewesource = self.find_resource('involvedObjectKind', 'v1', fail=True)
@@ -281,6 +281,11 @@ class KubernetesEvent(KubernetesRawModule):
         except openshift.dynamic.exceptions.NotFoundError:
             pass
 
+        involvedObject=resource.get(name=def_meta['name'], namespace=def_meta['namespace'])
+        involvedObject_resourceVersion=involvedObject['resourceVersion']
+        print("im the involvedObject resource version",involvedObject_resourceVersion)
+        involvedObject_uid=involvedObject['uid']
+
         event = {
        "apiVersion": "v1",#nr
        "count": priorCount, # not increment up
@@ -291,8 +296,8 @@ class KubernetesEvent(KubernetesRawModule):
           "kind": def_involvedObject['kind'],
           "namespace": def_involvedObject['namespace'],
           "name": def_involvedObject['name'],
-    #          "resourceVersion": "6989176211",
-    #          "uid": "0f4d7718-b314-11e9-9718-0a580a80006d"
+          "resourceVersion": involvedObject_resourceVersion,
+          "uid": involvedObject_uid
        },
        "kind": "Event", #not returned
        "lastTimestamp": rfc,# creating
@@ -303,7 +308,7 @@ class KubernetesEvent(KubernetesRawModule):
        },
        "reason": reason, #not hardcoded
        "reportingComponent": reportingComponent,#not returned not ahrdcoded
-       "reportingInstance": "1234", #not returned , not hardcoded
+       "reportingInstance": "", #not returned , not hardcoded
        "source":{"component": source}, #not returned source,
          # "component": "Metering Operator", #nh
        "type": event_type #enum service, maybe maybe k8 service
