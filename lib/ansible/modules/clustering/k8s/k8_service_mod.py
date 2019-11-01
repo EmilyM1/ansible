@@ -281,10 +281,16 @@ class KubernetesEvent(KubernetesRawModule):
         except openshift.dynamic.exceptions.NotFoundError:
             pass
 
-        involvedObject=resource.get(name=def_meta['name'], namespace=def_meta['namespace'])
-        involvedObject_resourceVersion=involvedObject['resourceVersion']
-        print("im the involvedObject resource version",involvedObject_resourceVersion)
-        involvedObject_uid=involvedObject['uid']
+        try:
+            totalEvent=resource.get(name=def_meta['name'], namespace=def_meta['namespace'])
+
+            if totalEvent is not None:
+                involvedObject_output=totalEvent['involvedObject']
+                print("im the involvedObject key", involvedObject_output)
+                involvedObject_resourceVersion=involvedObject_output['resourceVersion']
+                print("I'm the involvedObject resource version key", involvedObject_resourceVersion)
+        else:
+            pass
 
         event = {
        "apiVersion": "v1",#nr
@@ -296,8 +302,8 @@ class KubernetesEvent(KubernetesRawModule):
           "kind": def_involvedObject['kind'],
           "namespace": def_involvedObject['namespace'],
           "name": def_involvedObject['name'],
-          "resourceVersion": involvedObject_resourceVersion,
-          "uid": involvedObject_uid
+           "resourceVersion": involvedObject_resourceVersion,
+           "uid": "1"
        },
        "kind": "Event", #not returned
        "lastTimestamp": rfc,# creating
