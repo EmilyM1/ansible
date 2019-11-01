@@ -281,6 +281,7 @@ class KubernetesEvent(KubernetesRawModule):
         except openshift.dynamic.exceptions.NotFoundError:
             pass
 
+        involvedObject_resourceVersion = "1"
         try:
             totalEvent=resource.get(name=def_meta['name'], namespace=def_meta['namespace'])
 
@@ -289,7 +290,7 @@ class KubernetesEvent(KubernetesRawModule):
                 print("im the involvedObject key", involvedObject_output)
                 involvedObject_resourceVersion=involvedObject_output['resourceVersion']
                 print("I'm the involvedObject resource version key", involvedObject_resourceVersion)
-        else:
+        except openshift.dynamic.exceptions.NotFoundError:
             pass
 
         event = {
