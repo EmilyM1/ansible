@@ -314,6 +314,9 @@ class KubernetesEvent(KubernetesRawModule):
                 firstTimestamp=totalEvent['firstTimestamp']
                 print("the value of the firstTimestamp old event is", firstTimestamp)
                 lastTimestamp=firstTimestamp
+            else:
+                rfc = kubernetes.config.dateutil.format_rfc3339(now)
+                lastTimestamp=rfc
         except openshift.dynamic.exceptions.NotFoundError:
             pass
 
