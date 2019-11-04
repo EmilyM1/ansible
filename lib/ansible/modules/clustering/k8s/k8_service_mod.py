@@ -175,8 +175,8 @@ from ansible.module_utils.k8s.common import AUTH_ARG_SPEC, COMMON_ARG_SPEC
 from ansible.module_utils.k8s.raw import KubernetesRawModule
 # now = datetime.datetime.utcnow()
 # trying = now.isoformat()
-now = datetime.datetime.now()
-rfc = kubernetes.config.dateutil.format_rfc3339(now)
+# now = datetime.datetime.now()
+# rfc = kubernetes.config.dateutil.format_rfc3339(now)
 
 EVENT_ARG_SPEC = {
     'state': {
@@ -272,8 +272,13 @@ class KubernetesEvent(KubernetesRawModule):
             print("the count from the prior event is %i" % priorCount)
 
             if priorEvent is not None and priorReason != reason:
-                priorCount = 1
                 print("If reason changed %i" % priorCount)
+                now = datetime.datetime.now()
+                rfc = kubernetes.config.dateutil.format_rfc3339(now)
+                firstTimestamp=rfc
+                priorCount = 1
+                firstTimestamp=rfc
+                print("the value of the firstTimestamp new event is", firstTimestamp)
             else:
                 #priorCount = 1
                 priorCount = priorCount + 1
@@ -297,11 +302,27 @@ class KubernetesEvent(KubernetesRawModule):
         except openshift.dynamic.exceptions.NotFoundError:
             pass
 
+
+
+        now = datetime.datetime.now()
+        rfc = kubernetes.config.dateutil.format_rfc3339(now)
+        firstTimestamp=rfc
+        print("the value of the firstTimestamp new event is", firstTimestamp)
+        try:
+            totalEvent=resource.get(name=def_meta['name'], namespace=def_meta['namespace'])
+            if totalEvent is not None: #if the event exists
+                firstTimestamp=totalEvent['firstTimestamp']
+                print("the value of the firstTimestamp old event is", firstTimestamp)
+                lastTimestamp=firstTimestamp
+        except openshift.dynamic.exceptions.NotFoundError:
+            pass
+
+
         event = {
        "apiVersion": "v1",#nr
        "count": priorCount, # not increment up
        "eventTime": None,#nr
-       "firstTimestamp":rfc, # dont modifiy it after first time,
+       "firstTimestamp":firstTimestamp , # dont modifiy it after first time,
        "involvedObject": { #ref to
           "apiVersion": def_involvedObject['apiVersion'],
           "kind": def_involvedObject['kind'],
@@ -311,7 +332,7 @@ class KubernetesEvent(KubernetesRawModule):
            "uid": involvedObject_uid
        },
        "kind": "Event", #not returned
-       "lastTimestamp": rfc,# creating
+       "lastTimestamp": lastTimestamp,# creating
        "message": message, # will be can't br hardcoded, user supllied arg
        "metadata": {
           "name": def_meta['name'],
