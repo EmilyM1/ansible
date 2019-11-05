@@ -15,16 +15,16 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 
-module: k8s_service
+module: k8s_events
 
-short_description: Manage Services on Kubernetes
+short_description: Create Kubernetes Events
 
 version_added: "2.8"
 
-author: KubeVirt Team (@kubevirt)
+author: Emily Moss for Red Hat
 
 description:
-  - Use Openshift Python SDK to manage Services on Kubernetes
+  - Create Kubernetes Events for Metering
 
 extends_documentation_fragment:
   - k8s_auth_options
@@ -32,8 +32,8 @@ extends_documentation_fragment:
 options:
   resource_definition:
     description:
-    - A partial YAML definition of the Service object being created/updated. Here you can define Kubernetes
-      Service Resource parameters not covered by this module's parameters.
+    - A partial YAML definition of the Event object being created/updated. Here you can define Kubernetes
+      Event Resource parameters not covered by this module's parameters.
     - "NOTE: I(resource_definition) has lower priority than module parameters. If you try to define e.g.
       I(metadata.namespace) here, that value will be ignored and I(metadata) used instead."
     aliases:
@@ -74,33 +74,57 @@ options:
     type: list
   name:
     description:
-      - Use to specify a Service object name.
+      - Use to specify a Event object name.
     required: true
     type: str
   namespace:
     description:
-      - Use to specify a Service object namespace.
+      - Use to specify a Event object namespace.
+    required: true
+    type: str
+  message:
+    description:
+      - Status for Operation
+    required: true
+    type: str
+  reason:
+    description:
+      - Reason for the transition into the objects current status
+    required: true
+    type: str
+  reportingComponent:
+    description:
+      - Component responsible for event
     required: true
     type: str
   type:
     description:
-      - Specifies the type of Service to create.
-      - See U(https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
+      - Specifies the type of Event to create.
     choices:
       - NodePort
       - ClusterIP
       - LoadBalancer
       - ExternalName
-  ports:
+  source:
     description:
-      - A list of ports to expose.
-      - U(https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services)
-    type: list
-  selector:
-    description:
-      - Label selectors identify objects this Service should apply to.
-      - U(https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
-    type: dict
+      - Component for reporting this Event
+    required: true
+    type: string
+  involvedObject:
+    description: ObjectReference
+      - Object event is reporting on. ApiVersion, kind, name and namespace are of the involvedObject.
+    - apiVersion
+      required: true
+      type: string
+    - kind
+      required: true
+      type: string
+    - name
+      required: true
+      type: string
+    - namespace
+      required: true
+      type: string
 
 requirements:
   - python >= 2.7
@@ -108,35 +132,29 @@ requirements:
 '''
 
 EXAMPLES = '''
-- name: Expose https port with ClusterIP
-  k8s_service:
-    state: present
-    name: test-https
-    namespace: default
-    ports:
-    - port: 443
-      protocol: TCP
-    selector:
-      key: special
 
-- name: Expose https port with ClusterIP using spec
-  k8s_service:
-    state: present
-    name: test-https
+- name: Create Kubernetes Event
+  k8s_events
+  state: present
+  name: test-https-emily109
+  namespace: default
+  message: message here
+  reason: reason is now different againnnnnnnnnnnn
+  reportingComponent: reportingComponents here
+  type: Normal
+  source:
+    component: Metering components
+  involvedObject:
+    apiVersion: v1
+    kind: Event
+    name: involvedObject event names
     namespace: default
-    inline:
-      spec:
-        ports:
-        - port: 443
-          protocol: TCP
-        selector:
-          key: special
 '''
 
 RETURN = '''
 result:
   description:
-  - The created, patched, or otherwise present Service object. Will be empty in the case of a deletion.
+  - The created, patched, or otherwise present Event object. Will be empty in the case of a deletion.
   returned: success
   type: complex
   contains:
@@ -145,7 +163,7 @@ result:
        returned: success
        type: str
      kind:
-       description: Always 'Service'.
+       description: Always 'Event'.
        returned: success
        type: str
      metadata:
@@ -207,19 +225,6 @@ class KubernetesEvent(KubernetesRawModule):
     def __init__(self, *args, **kwargs):
         super(KubernetesEvent, self).__init__(*args, k8s_kind='Event', **kwargs)
 
-    # @staticmethod
-    # def merge_dicts(x, y):
-    #     for k in set(x.keys()).union(y.keys()):
-    #         if k in x and k in y:
-    #             if isinstance(x[k], dict) and isinstance(y[k], dict):
-    #                 yield (k, dict(KubernetesEvent.merge_dicts(x[k], y[k])))
-    #             else:
-    #                 yield (k, y[k])
-    #         elif k in x:
-    #             yield (k, x[k])
-    #         else:
-    #             yield (k, y[k])
-
     @property
     def argspec(self):
         """ argspec property builder """
@@ -239,7 +244,6 @@ class KubernetesEvent(KubernetesRawModule):
         reportingComponent = self.params.get('reportingComponent')
         event_type = self.params.get('type')
         source = self.params.get('source')
-#        involvedObject = self.params.get('involvedObject')
 
         definition = defaultdict(defaultdict)
 
@@ -252,8 +256,6 @@ class KubernetesEvent(KubernetesRawModule):
         def_involvedObject['apiVersion'] = self.params.get('apiVersion')
         def_involvedObject['kind'] = self.params.get('kind')
         def_involvedObject['name'] = self.params.get('name')
-
-#        def_involvedObject = definition['involvedObject']
         def_involvedObject['uid'] = self.params.get('uid')
         def_involvedObject['resourceVersion'] = self.params.get('resourceVersion')
         resource = self.find_resource('Event', 'v1', fail=True)#finds resource or gets it from the client api, looks for resrouce
@@ -336,7 +338,7 @@ class KubernetesEvent(KubernetesRawModule):
        },
        "kind": "Event", #not returned
        "lastTimestamp": lastTimestamp,# creating
-       "message": message, # will be can't br hardcoded, user supllied arg
+       "message": message,
        "metadata": {
           "name": def_meta['name'],
           "namespace": "default",
@@ -346,7 +348,7 @@ class KubernetesEvent(KubernetesRawModule):
        "reportingInstance": "", #not returned , not hardcoded
        "source":{"component": source}, #not returned source,
          # "component": "Metering Operator", #nh
-       "type": event_type #enum service, maybe maybe k8 service
+       "type": event_type
     }
 
         print("count from CURRENT is %i" % event['count'])
