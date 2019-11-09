@@ -147,10 +147,10 @@ EXAMPLES = """
     source:
     component: Metering components
     involvedObject:
-    apiVersion: v1
-    kind: Event
-    name: involvedObject event names
-    namespace: default
+      apiVersion: v1
+      kind: Event
+      name: involvedObject event names
+      namespace: default
 """
 
 RETURN = """
@@ -190,19 +190,19 @@ import openshift
 
 from collections import defaultdict
 
-from ansible.module_utils.k8s.common import AUTH_ARG_SPEC, COMMON_ARG_SPEC
+from ansible.module_utils.k8s.common import AUTH_ARG_SPEC
 from ansible.module_utils.k8s.raw import KubernetesRawModule
 
 # user args
 EVENT_ARG_SPEC = {
-    "state": {"default": "present", "choices": ["present", "absent"],},
+    "state": {"default": "present", "choices": ["present", "absent"]},
     "name": {"required": True},
     "namespace": {"required": True},
     "merge_type": {"type": "list", "choices": ["json", "merge", "strategic-merge"]},
     "message": {"type": "str", "required": True},
     "reason": {"type": "str", "required": True},
     "reportingComponent": {"type": "str", "required": True},
-    "type": {"choices": ["Normal", "Warning"],},
+    "type": {"choices": ["Normal", "Warning"]},
     "source": {"type": "str", "component": {"type": "str", "required": True}},
     "involvedObject": {
         "type": "dict",
@@ -221,9 +221,9 @@ class KubernetesEvent(KubernetesRawModule):
     @property
     def argspec(self):
         """ argspec property builder """
-        argument_spec = copy.deepcopy(AUTH_ARG_SPEC)
-        argument_spec.update(EVENT_ARG_SPEC)
-        return argument_spec
+        argumentSpec = copy.deepcopy(AUTH_ARG_SPEC)
+        argumentSpec.update(EVENT_ARG_SPEC)
+        return argumentSpec
 
     def execute_module(self):
         """ Module execution """
@@ -231,9 +231,6 @@ class KubernetesEvent(KubernetesRawModule):
         self.client = self.get_api_client()
 
         # retrieve params
-        api_version = "v1"
-        name = self.params.get("name")
-        namespace = self.params.get("namespace")
         message = self.params.get("message")
         reason = self.params.get("reason")
         reporting_component = self.params.get("reportingComponent")
@@ -247,15 +244,14 @@ class KubernetesEvent(KubernetesRawModule):
         meta["namespace"] = self.params.get("namespace")
 
         involved_obj = self.params.get("involvedObject")
-        print(involved_obj["kind"],involved_obj["namespace"],involved_obj["name"],involved_obj["apiVersion"])
-
+        print(involved_obj["kind"], involved_obj["namespace"], involved_obj["name"], involved_obj["apiVersion"])
 
         resource = self.find_resource(
             "Event", "v1", fail=True)
 
-        priorEvent = None
+        prior_event = None
         try:
-            priorEvent = resource.get(
+            prior_event = resource.get(
                 name=meta["name"],
                 namespace=meta["namespace"])
 
@@ -263,65 +259,46 @@ class KubernetesEvent(KubernetesRawModule):
             pass
 
         # event counter
-        priorCount = 1
-        print("the count is no event exists %i" % priorCount)
+        prior_count = 1
+        print("the count is no event exists %i" % prior_count)
         now = datetime.datetime.now()
         rfc = kubernetes.config.dateutil.format_rfc3339(now)
-        firstTimestamp = rfc
-        lastTimestamp = rfc
+        first_timestamp = rfc
+        last_timestamp = rfc
 
-        if priorEvent:
-            if priorEvent["reason"] != reason:
-                print("If event exists and reason is changed %i" % priorCount)
-                now = datetime.datetime.now()
-                rfc = kubernetes.config.dateutil.format_rfc3339(now)
-                priorCount = 1
-                firstTimestamp = rfc
-                print("the value of the firstTimestamp new event is", firstTimestamp)
-                lastTimestamp = rfc
-                print("the value of the lastTimestamp new event is", lastTimestamp)
-            else:
-                priorCount = priorEvent["count"] + 1
-                print("If event exists and reason is the same %i" % priorCount)
-                firstTimestamp = priorEvent["firstTimestamp"]
-                print("the value of the firstTimestamp event exists same reason is", firstTimestamp)
-                lastTimestamp = firstTimestamp
-                print("the value of the lastTimestamp event exists same reason is", lastTimestamp)
+        if prior_event and prior_event["reason"] == reason:
+            prior_count = prior_event["count"] + 1
+            print("If event exists and reason is the same %i" % prior_count)
+            first_timestamp = prior_event["firstTimestamp"]
+            print("the value of the firstTimestamp event exists same reason is", first_timestamp)
+            last_timestamp = rfc
+            print("the value of the lastTimestamp event exists same reason is", last_timestamp)
 
         # handle involvedObject
-        involvedObject_resourceVersion = None
-        involvedObject_uid = None
-        involvedObjectResource = self.find_resource(
+        involved_object_resource = self.find_resource(
             involved_obj["kind"], "v1", fail=True)
 
-        if involvedObjectResource:
+        if involved_object_resource:
             try:
-                apiInvolvedObject = resource.get(
+                api_involved_object = resource.get(
                     name=involved_obj["name"], namespace=involved_obj["namespace"])
 
-                involvedObject_uid = apiInvolvedObject["metadata"]["uid"]
-                involvedObject_resourceVersion = apiInvolvedObject["metadata"]["resourceVersion"]
+                involved_obj["uid"] = api_involved_object["metadata"]["uid"]
+                involved_obj["resourceVersion"] = api_involved_object["metadata"]["resourceVersion"]
 
             except openshift.dynamic.exceptions.NotFoundError:
                 pass
 
         event = {
             "apiVersion": "v1",
-            "count": priorCount,
+            "count": prior_count,
             "eventTime": None,
-            "firstTimestamp": firstTimestamp,
-            "involvedObject": {
-                "apiVersion": involved_obj["apiVersion"],
-                "kind": involved_obj["kind"],
-                "namespace": involved_obj["namespace"],
-                "name": involved_obj["name"],
-                "resourceVersion": involvedObject_resourceVersion,
-                "uid": involvedObject_uid,
-            },
+            "firstTimestamp": first_timestamp,
+            "involvedObject": involved_obj,
             "kind": "Event",
-            "lastTimestamp": lastTimestamp,
+            "lastTimestamp": last_timestamp,
             "message": message,
-            "metadata": {"name": meta["name"], "namespace": "default",},
+            "metadata": {"name": meta["name"], "namespace": meta["namespace"]},
             "reason": reason,
             "reportingComponent": reporting_component,
             "reportingInstance": "",
