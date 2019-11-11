@@ -246,8 +246,7 @@ class KubernetesEvent(KubernetesRawModule):
         involved_obj = self.params.get("involvedObject")
         print(involved_obj["kind"], involved_obj["namespace"], involved_obj["name"], involved_obj["apiVersion"])
 
-        resource = self.find_resource(
-            "Event", "v1", fail=True)
+        resource = self.find_resource("Event", "v1", fail=True)
 
         prior_event = None
         try:
@@ -275,8 +274,7 @@ class KubernetesEvent(KubernetesRawModule):
             print("the value of the lastTimestamp event exists same reason is", last_timestamp)
 
         # handle involvedObject
-        involved_object_resource = self.find_resource(
-            involved_obj["kind"], "v1", fail=True)
+        involved_object_resource = self.find_resource(involved_obj["kind"], "v1", fail=True)
 
         if involved_object_resource:
             try:
@@ -290,15 +288,16 @@ class KubernetesEvent(KubernetesRawModule):
                 pass
 
         event = {
-            "apiVersion": "v1",
             "count": prior_count,
             "eventTime": None,
             "firstTimestamp": first_timestamp,
             "involvedObject": involved_obj,
-            "kind": "Event",
             "lastTimestamp": last_timestamp,
             "message": message,
-            "metadata": {"name": meta["name"], "namespace": meta["namespace"]},
+            "metadata": {
+                "name": meta["name"],
+                "namespace": meta["namespace"]
+                },
             "reason": reason,
             "reportingComponent": reporting_component,
             "reportingInstance": "",
