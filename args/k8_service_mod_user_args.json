@@ -3,17 +3,17 @@
     "ANSIBLE_MODULE_ARGS": {
    "state": "present",
    "name": "test-https-emily109",
-   "namespace": "default",
+   "namespace": "ansible-emily",
    "message": "message here",
-   "reason": "reason is now differennnnnnt again",
+   "reason": "reason is now differennnt again",
    "reportingComponent": "reportingComponents here",
    "type": "Normal",
    "source": {"component": "Metering components"},
    "involvedObject": {
       "apiVersion": "v1",
-      "kind": "Event",
-      "name": "involvedObject event names",
-      "namespace": "default"
+      "kind": "Service",
+      "name": "test-https-emily107",
+      "namespace": "ansible-emily"
    }
 
 

@@ -101,12 +101,10 @@ options:
     type: str
   type:
     description:
-      - Specifies the type of Event to create.
+      - Type of Event
     choices:
-      - NodePort
-      - ClusterIP
-      - LoadBalancer
-      - ExternalName
+      - Warning
+      - Normal
   source:
     description:
       - Component for reporting this Event
@@ -140,16 +138,16 @@ EXAMPLES = """
     state: present
     name: test-https-emily109
     namespace: default
-    message: message here
-    reason: reason is now different againnnnnnnnnnnn
-    reportingComponent: reportingComponents here
+    message: Event created
+    reason: Created
+    reportingComponent: Reporting components
     type: Normal
     source:
     component: Metering components
     involvedObject:
       apiVersion: v1
-      kind: Event
-      name: involvedObject event names
+      kind: Service
+      name: test-https-emily107
       namespace: default
 """
 
@@ -161,25 +159,54 @@ result:
   type: complex
   contains:
      api_version:
-       description: The versioned schema of this representation of an object.
+        description: The versioned schema of this representation of an object.
+        returned: success
+        type: str
+     count:
+       description: Count of Event occurance
        returned: success
-       type: str
+       type: int
+     firstTimestamp:
+       description: Timestamp of first occurance of Event
+       returned: success
+       type: timestamp
+     involvedObject:
+       description: Object event is reporting on. Includes apiVersion, kind, name, namespace, resourceVersion and uid.
+       returned: success
+       type: complex
      kind:
        description: Always 'Event'.
+       returned: success
+       type: str
+     lastTimestamp:
+       description: Timestamp of last occurance of Event
+       returned: success
+       type: timestamp
+     message:
+       description: Status for operation
        returned: success
        type: str
      metadata:
        description: Standard object metadata. Includes name, namespace, annotations, labels, etc.
        returned: success
        type: complex
-     spec:
-       description: Specific attributes of the object. Will vary based on the I(api_version) and I(kind).
+     reason:
+       description: Reason for the transition into the objects current status
        returned: success
-       type: complex
-     status:
-       description: Current status details for the object.
+       type: str
+     reportingComponent:
+       description: Component responsible for event
        returned: success
-       type: complex
+       type: str
+     source:
+       description: Component for reporting this Event
+       returned: success
+       type: string
+     type:
+       description: Type of Event. Either Normal or Warning
+       returned: success
+       type: string
+
 """
 
 import copy
@@ -193,7 +220,6 @@ from collections import defaultdict
 from ansible.module_utils.k8s.common import AUTH_ARG_SPEC
 from ansible.module_utils.k8s.raw import KubernetesRawModule
 
-# user args
 EVENT_ARG_SPEC = {
     "state": {"default": "present", "choices": ["present", "absent"]},
     "name": {"required": True},
@@ -227,10 +253,8 @@ class KubernetesEvent(KubernetesRawModule):
 
     def execute_module(self):
         """ Module execution """
-        #auth
         self.client = self.get_api_client()
 
-        # retrieve params
         message = self.params.get("message")
         reason = self.params.get("reason")
         reporting_component = self.params.get("reportingComponent")
@@ -244,7 +268,6 @@ class KubernetesEvent(KubernetesRawModule):
         meta["namespace"] = self.params.get("namespace")
 
         involved_obj = self.params.get("involvedObject")
-        print(involved_obj["kind"], involved_obj["namespace"], involved_obj["name"], involved_obj["apiVersion"])
 
         resource = self.find_resource("Event", "v1", fail=True)
 
@@ -257,9 +280,7 @@ class KubernetesEvent(KubernetesRawModule):
         except openshift.dynamic.exceptions.NotFoundError:
             pass
 
-        # event counter
         prior_count = 1
-        print("the count is no event exists %i" % prior_count)
         now = datetime.datetime.now()
         rfc = kubernetes.config.dateutil.format_rfc3339(now)
         first_timestamp = rfc
@@ -267,19 +288,15 @@ class KubernetesEvent(KubernetesRawModule):
 
         if prior_event and prior_event["reason"] == reason:
             prior_count = prior_event["count"] + 1
-            print("If event exists and reason is the same %i" % prior_count)
             first_timestamp = prior_event["firstTimestamp"]
-            print("the value of the firstTimestamp event exists same reason is", first_timestamp)
             last_timestamp = rfc
-            print("the value of the lastTimestamp event exists same reason is", last_timestamp)
 
-        # handle involvedObject
         involved_object_resource = self.find_resource(involved_obj["kind"], "v1", fail=True)
 
         if involved_object_resource:
             try:
-                api_involved_object = resource.get(
-                    name=involved_obj["name"], namespace=involved_obj["namespace"])
+                api_involved_object = involved_object_resource.get(
+                   name=involved_obj["name"], namespace=involved_obj["namespace"])
 
                 involved_obj["uid"] = api_involved_object["metadata"]["uid"]
                 involved_obj["resourceVersion"] = api_involved_object["metadata"]["resourceVersion"]
@@ -297,7 +314,7 @@ class KubernetesEvent(KubernetesRawModule):
             "metadata": {
                 "name": meta["name"],
                 "namespace": meta["namespace"]
-                },
+            },
             "reason": reason,
             "reportingComponent": reporting_component,
             "reportingInstance": "",
@@ -305,13 +322,6 @@ class KubernetesEvent(KubernetesRawModule):
             "type": event_type,
         }
 
-        print("count from CURRENT is %i" % event["count"])
-
-        #passes from metadata
-        definition = self.set_defaults(
-            resource, definition
-        )
-        # updates if info has changed
         result = self.perform_action(resource, event)
         self.exit_json(**result)
 
