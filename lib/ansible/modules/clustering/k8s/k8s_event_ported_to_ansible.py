@@ -143,7 +143,7 @@ EXAMPLES = """
     reportingComponent: Reporting components
     type: Normal
     source:
-    component: Metering components
+      component: Metering components
     involvedObject:
       apiVersion: v1
       kind: Service
@@ -229,7 +229,10 @@ EVENT_ARG_SPEC = {
     "reason": {"type": "str", "required": True},
     "reportingComponent": {"type": "str", "required": True},
     "type": {"choices": ["Normal", "Warning"]},
-    "source": {"type": "str", "component": {"type": "str", "required": True}},
+    "source": {
+        "type": "dict",
+        "component": {"type": "str", "required": True}
+    },
     "involvedObject": {
         "type": "dict",
         "apiVersion": {"type": "str", "required": True},
@@ -318,7 +321,7 @@ class KubernetesEvent(KubernetesRawModule):
             "reason": reason,
             "reportingComponent": reporting_component,
             "reportingInstance": "",
-            "source": {"component": source},
+            "source": source,
             "type": event_type,
         }
 
