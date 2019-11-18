@@ -106,10 +106,11 @@ options:
       - Warning
       - Normal
   source:
-    description:
+    description: EventSource
       - Component for reporting this Event
-    required: true
-    type: string
+    - component
+      required: true
+      type: string
   involvedObject:
     description: ObjectReference
       - Object event is reporting on. ApiVersion, kind, name and namespace are of the involvedObject.
@@ -199,9 +200,9 @@ result:
        returned: success
        type: str
      source:
-       description: Component for reporting this Event
+       description: Component for reporting this Event. Includes source.
        returned: success
-       type: string
+       type: complex
      type:
        description: Type of Event. Either Normal or Warning
        returned: success
