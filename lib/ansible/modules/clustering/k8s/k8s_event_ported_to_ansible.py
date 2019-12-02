@@ -200,7 +200,7 @@ result:
        returned: success
        type: str
      source:
-       description: Component for reporting this Event. Includes source.
+       description: Source contains information for an Event
        returned: success
        type: complex
      type:
